@@ -1,0 +1,26 @@
+* Better keybinding definitions
+#+begin_src emacs-lisp
+(eval-and-compile
+  (mapc #'(lambda (entry)
+            (define-prefix-command (cdr entry))
+            (bind-key (car entry) (cdr entry)))
+        '(("C-,"   . my-ctrl-comma-map)
+          ("<C-m>" . my-ctrl-m-map)
+
+          ("C-h e" . my-ctrl-h-e-map)
+          ("C-h x" . my-ctrl-h-x-map)
+
+          ("C-c b" . my-ctrl-c-b-map)
+          ("C-c e" . my-ctrl-c-e-map)
+          ("C-c m" . my-ctrl-c-m-map)
+          ("C-c w" . my-ctrl-c-w-map)
+          ("C-c y" . my-ctrl-c-y-map)
+          ("C-c H" . my-ctrl-c-H-map)
+          ("C-c N" . my-ctrl-c-N-map)
+          ("C-c (" . my-ctrl-c-open-paren-map)
+          ("C-c -" . my-ctrl-c-minus-map)
+          ("C-c =" . my-ctrl-c-equals-map)
+          ("C-c ." . my-ctrl-c-r-map)
+          )))
+
+#+end_src

@@ -1,0 +1,141 @@
+* IDO
+Use Ido to find things
+#+begin_src emacs-lisp
+;; (defadvice ido-find-file (after find-file-sudo activate)
+;;   "Find file as root if necessary."
+;;   (unless
+;; ;;(and buffer-file-name
+;;                (file-writable-p buffer-file-name)
+;; ;;)
+;;     (find-alternate-file (concat "/sudo:root@localhost:" buffer-file-name)))
+;; )
+
+;; (defun recentf-open-files-compl ()
+;;   (interactive)
+;;   (let* ((tocpl (mapcar (lambda (x) (cons (file-name-nondirectory x) x))
+;;                         recentf-list))
+;;          (fname (completing-read "File name: " tocpl nil nil)))
+;;     (when fname
+;;       (find-file (cdr (assoc-string fname tocpl)))))) 
+
+;; (defun ido-choose-from-recentf ()
+;;   "Use ido to select recently visited files."
+;;   (interactive)
+;;   (find-file (ido-completing-read "Open file: " recentf-list nil t)))
+
+;; ;;; use recentf within ido
+;; (defun recentf-ido-find-file ()
+;;     "Find a recent file using Ido."
+;;     (interactive)
+;;     (let* ((file-assoc-list
+;;             (mapcar (lambda (x)
+;;                       (cons (file-name-nondirectory x)
+;;                             x))
+;;                     recentf-list))
+;;            (filename-list
+;;             (remove-duplicates (mapcar #'car file-assoc-list)
+;;                                :test #'string=))
+;;            (filename (ido-completing-read "Choose recent file: "
+;;                                           filename-list
+;;                                           nil
+;;                                           t)))
+;;       (when filename
+;;         (find-file (cdr (assoc filename
+;;                                file-assoc-list))))))
+
+;; (use-package ido 
+;;   :config
+
+;; ;;; ignore certain file types
+;;   (setq completion-ignored-extensions '(".o" ".elc" "~" ".bin" ".bak"
+;; 					".obj" ".map" ".a" ".so"
+;; 					".mod" ".aux" ".out" ".pyg"))
+
+;; ;;; show ido vertically
+;;   (setq ido-decorations (quote ("\n-> " "" "\n " "\n ..." "[" "]" "
+;;   [No match]" " [Matched]" " [Not readable]" " [Too big]" "
+;;   [Confirm]")))
+
+;;   (defun ido-disable-line-truncation () (set (make-local-variable 'truncate-lines) nil))
+;;   (add-hook 'ido-minibuffer-setup-hook 'ido-disable-line-truncation)
+
+;; ;;; keey annoying buffers out of reach
+;;   (setq ido-ignore-buffers (list (rx (or (and bos  " ")
+;; 					(and bos
+;;                                            (or "*Completions*"
+;;                                               "*Shell Command Output*"
+;;                                               "*vc-diff*")
+;;                                            eos)))))
+;;   (setq ido-everywhere t
+;; 	ido-virtual-buffers t
+;; 	ido-use-faces t
+;; 	ido-default-buffer-method 'selected-window
+;; 	ido-auto-merge-work-directories-length -1)
+;;   (ido-mode)
+;;   )
+
+;; (require 'icomplete)
+;; (setq-local icomplete-separator "\n"
+;;             max-mini-window-height 10
+;;             resize-mini-windows 'grow-only
+;;             truncate-lines t)
+;; (setq icomplete-separator " \n "
+;;       icomplete-delay-completions-threshold 0
+;;       icomplete-max-delay-chars 0
+;;       icomplete-compute-delay 0
+;;       icomplete-show-matches-on-no-input t
+;;       icomplete-hide-common-prefix nil
+;;       icomplete-in-buffer t
+;;       icomplete-prospects-height 15
+;;       icomplete-with-completion-tables t)
+
+;; (fido-vertical-mode)
+;; (fido-mode +1)
+
+;; (require 'minibuffer)
+;;       (setq completion-styles
+;;             '(partial-completion basic flex initials substring)
+;;             completion-category-overrides
+;;             '((file (styles basic flex initials substring))
+;;               (buffer (styles basic flex initials substring))
+;;               (info-menu (styles basic flex initials substring))))
+
+;; ;; (setq completion-styles '(initials partial-completion flex))
+;; 					; > Emacs 27.1
+;; (setq completion-cycle-threshold 10)
+;; (setq completions-format 'vertical
+;;       completion-ignore-case t
+;;       completion-cycle-threshold t
+;;       completion-flex-nospace nil
+;;       completion-show-help nil
+;;       completion-pcm-complete-word-inserts-delimiters t
+;;       read-answer-short t
+;;       read-file-name-completion-ignore-case t
+;;       read-buffer-completion-ignore-case t
+;;       resize-mini-windows t)
+
+;; (file-name-shadow-mode 1)
+;; (minibuffer-depth-indicate-mode 1)
+;; (minibuffer-electric-default-mode 1)
+
+;; (icomplete-mode 1)
+#+end_src
+* IDO Menu
+#+begin_src emacs-lisp
+;; (use-package idomenu
+;;   :bind ("C-c i" . idomenu))
+#+end_src
+* Amx
+An alternative to M-x --
+mainly useful for reporting most common commands so I can rebind them later
+#+begin_src emacs-lisp
+(use-package amx
+  :disabled
+  :config
+  (amx-mode 1))
+#+end_src
+* Popup
+Not sure -- some packages complain if this isn't avoiable early enough
+#+begin_src emacs-lisp
+(use-package popup)
+#+end_src

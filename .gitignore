@@ -1,0 +1,13 @@
+.python-environments/
+auto-save-list/
+backups/
+eln-cache/
+elpa/
+etc/
+indium-chrome-profile/
+quelpa/
+transient/
+var/
+.last-package-update-day
+*[~]
+saveplace*
