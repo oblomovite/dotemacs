@@ -131,7 +131,7 @@ https://github.com/lepisma/rogue/blob/af1becdd0809128def9732b674e43c04e6788620/c
 #+end_src
 * Get Packages
 #+begin_src emacs-lisp
-;; (setq package-selected-packages '(lsp-mode yasnippet lsp-treemacs helm-lsp projectile hydra flycheck company avy which-key helm-xref dap-mode zenburn-theme json-mode))
+;; (setq package-selected-packages '( json-mode))
 ;; (when (cl-find-if-not #'package-installed-p package-selected-packages)
 ;;   (package-refresh-contents)
 ;;   (mapc #'package-install package-selected-packages))
@@ -199,6 +199,8 @@ https://github.com/lepisma/rogue/blob/af1becdd0809128def9732b674e43c04e6788620/c
  indent-tabs-mode nil
  tab-width 8
  make-backup-files nil)
+
+ (setq bookmark-save-flag t)
 
 (setq 
       create-lockfiles nil) ;; lock files will kill `npm start'
@@ -375,8 +377,9 @@ Install all the fonts with M-x all-the-icons-install-fonts
  user-mail-address "robert.sheynin@gmail.com"
 
  ;; Ensure custom values are saved to an ignored file.
- ;; custom-file (locate-user-emacs-file "custom.el")
- custom-file (expand-file-name "custom.el" user-emacs-directory)
+
+ custom-file (locate-user-emacs-file "custom.el")
+ ;; custom-file (expand-file-name "custom.el" user-emacs-directory)
 
  ;; Don't warn on redefinition
  ad-redefinition-action 'accept
@@ -397,6 +400,12 @@ Install all the fonts with M-x all-the-icons-install-fonts
 
 ;; highlight the current line
 (global-hl-line-mode +1)
+
+
+;; (setq custom-file "~/.emacs.d/custom.el")
+;;(if (file-exists-p custom-file)
+ ;;   (load-file custom-file))
+
 #+end_src
 * Only Vertical Splits
 #+begin_src emacs-lisp
@@ -459,6 +468,34 @@ Revert image and pdf buffers without asking
 #+begin_src emacs-lisp
 (setq revert-without-query '("\\.pdf" "\\.png"))
 #+end_src
+* Keyboard Bindings
+#+begin_src emacs-lisp
+;; escape quits
+(global-set-key [escape] 'keyboard-escape-quit)         
+(bind-key "<escape>" 'isearch-cancel isearch-mode-map)
+(define-key minibuffer-local-map (kbd "ESC") 'abort-recursive-edit)
+(define-key minibuffer-local-ns-map (kbd "ESC") 'abort-recursive-edit)
+(define-key minibuffer-local-completion-map (kbd "ESC") 'abort-recursive-edit)
+(define-key minibuffer-local-must-match-map (kbd "ESC") 'abort-recursive-edit)
+(define-key minibuffer-local-isearch-map (kbd "ESC") 'abort-recursive-edit)
+
+(define-key minibuffer-local-map (kbd "C-h") 'vertico--backward-updir)
+(define-key minibuffer-local-ns-map (kbd "C-h") 'vertico--backward-updir)
+
+
+(define-key minibuffer-local-map (kbd "C-j") 'next-line-or-history-element)
+(define-key minibuffer-local-ns-map (kbd "C-j") 'next-line-or-history-element)
+(define-key minibuffer-local-completion-map (kbd "C-j") 'next-line-or-history-element)
+(define-key minibuffer-local-must-match-map (kbd "C-j") 'next-line-or-history-element)
+(define-key minibuffer-local-isearch-map (kbd "C-j") 'next-line-or-history-element)
+
+(define-key minibuffer-local-map (kbd "C-k") 'previous-line-or-history-element)
+(define-key minibuffer-local-ns-map (kbd "C-k") 'previous-line-or-history-element)
+(define-key minibuffer-local-completion-map (kbd "C-k") 'previous-line-or-history-element)
+
+(define-key minibuffer-local-must-match-map (kbd "C-k") 'previous-line-or-history-element)
+(define-key minibuffer-local-isearch-map (kbd "C-k") 'previous-line)
+#+end_src
 * Evil and Friends -- add bindings for browse-kill-ring
 #+begin_src emacs-lisp
 
@@ -472,6 +509,17 @@ Revert image and pdf buffers without asking
 	(when (search-backward "/" (point-min) t)
 	  (delete-region (1+ (point)) (point-max))))
     (call-interactively 'backward-kill-word)))
+
+
+(defun scroll-up-1 ()
+  "Scroll up by one line."
+  (interactive)
+  (cua-scroll-up 1))
+
+(defun scroll-down-1 ()
+  "Scroll down by one line."
+  (interactive)
+  (cua-scroll-down 1))
 
 (defun zz-scroll-half-page (direction)
   "Scrolls half page up if `direction' is non-nil, otherwise will scroll half page down."
@@ -492,6 +540,10 @@ Revert image and pdf buffers without asking
   "Scrolls exactly half page up keeping cursor/point position."
   (interactive)
   (zz-scroll-half-page t))
+
+
+
+
 
 
 (use-package evil
@@ -602,9 +654,9 @@ if no region is marked the line is commented instead"
 	   '(endless/forward-paragraph endless/backward-paragraph)))
       ;; Only push mark if it's not active and we're not repeating.
       (or m
-	 (not (member this-command para-commands))
-	 (member last-command para-commands)
-	 (push-mark))
+	  (not (member this-command para-commands))
+	  (member last-command para-commands)
+	  (push-mark))
       ;; The actual movement.
       (dotimes (_ (abs n))
 	(if (> n 0)
@@ -714,6 +766,10 @@ if no region is marked the line is commented instead"
     (kbd "C-SPC h k") 'helpful-key
     (kbd "C-SPC h m") 'describe-mode
 
+    ;; find file in project
+    (kbd "C-SPC p f") 'affe-find
+    (kbd "C-SPC p g") 'affe-grep
+
     ;; dired 
     (kbd "C-SPC d") 'dired-other-window
     (kbd ", d") 'dired-other-window
@@ -791,6 +847,10 @@ if no region is marked the line is commented instead"
 
     ;; spell check
     (kbd ", s") 'flyspell-buffer
+
+    ;; bookmarks
+    (kbd ", B B") 'consult-bookmark
+    (kbd ", B s") 'bookmark-save
     )
 
   ;; rg results buffer navigation
@@ -843,6 +903,7 @@ if no region is marked the line is commented instead"
     (kbd ", f b") 'dumb-jump-back
     (kbd ", f q") 'dumb-jump-quick-look
     (kbd ", f a") 'xref-find-apropos
+    (kbd ", F") 'consult-xref
 
     (kbd ", i i") 'imenu
     )
@@ -929,11 +990,6 @@ if no region is marked the line is commented instead"
     (kbd ", e o") 'eglot-code-action-organize-imports
     (kbd ", f") 'xref-find-defintions)
 
-  ;; Company
-  ;; (evil-define-key '(normal insert) company-active-map
-  ;;   (kbd "C-j") 'company-select-next
-  ;;   (kbd "C-k") 'company-select-previous)
-
   ;; Python
   (evil-define-key 'normal python-mode-map
     (kbd "K" ) 'python-nav-backward-defun
@@ -966,6 +1022,35 @@ if no region is marked the line is commented instead"
     (kbd "t") 'pdf-annot-add-text-annotation
     (kbd "h") 'pdf-annot-add-highlight-markup-annotation
     )
+
+
+  (evil-define-key 'normal elisp-mode-map
+    (kbd ">") 'paredit-forward-slurp-sexp
+    (kbd "<") 'paredit-backward-slurp-sexp
+    (kbd "C-,") 'paredit-backward-barf-sexp
+    (kbd "C-.") 'paredit-forward-barf-sexp)
+
+
+  ;; (evil-define-key 'normal global-map
+  ;;   (kbd "C-SPC C D f") 'ispell-change-dictionary "francais"
+  ;;   (kbd "C-SPC C D e") 'ispell-change-dictionary "english"
+  ;;   (kbd "C-SPC C D r") 'ispell-change-dictionary "Russian"
+  ;;   (kbd "C-SPC C D d") 'ispell-change-dictionary "francais"
+
+  ;;   )
+
+  ;; (global-set-key
+  ;;  [f3]
+  ;;  (lambda ()
+  ;;    (interactive)
+  ;;    (ispell-change-dictionary "francais")))
+  ;; (global-set-key
+  ;;  [f4]
+  ;;  (lambda ()
+  ;;    (interactive)
+  ;;    (ispell-change-dictionary "english")))
+
+
   )
 
 
@@ -1005,14 +1090,18 @@ if no region is marked the line is commented instead"
 #+end_src
 * Google Translate
 #+begin_src emacs-lisp 
-(use-package google-translate)
-;; (require 'google-translate)
-(require 'google-translate-default-ui)
-(global-set-key "\C-ct" 'google-translate-at-point)
-( global-set-key "\C-cT" 'google-translate-query-translate )
+  (use-package google-translate
+    :config
+
+    (require 'google-translate-default-ui)
+    (global-set-key "\C-ct" 'google-translate-at-point)
+    ( global-set-key "\C-cT" 'google-translate-query-translate )
+
+    )
+  ;; (require 'google-translate)
 
 #+end_src
-* TODO Spelling
+* TODO Spelling Ispell
 #+begin_src emacs-lisp
 (setq flyspell-sort-corrections nil)
 (setq flyspell-issue-message-flag nil)
@@ -1054,32 +1143,20 @@ if no region is marked the line is commented instead"
 ;; You could add extra option "--camel-case" for since Aspell 0.60.8 
 ;; @see https://github.com/redguardtoo/emacs.d/issues/796
 ;; (setq ispell-extra-args '("--sug-mode=ultra" "--lang=en_US" "--run-together" "--run-together-limit=16"))
-
-
-;; support spell checking of camel cased words
-(use-package wucuo
+#+end_src
+** Guess Language
+A package to automatically detect the language in a buffer and change
+dictionaries accordingly
+#+begin_src emacs-lisp
+(use-package guess-language         ; Automatically detect language for Flyspell
+  :defer t
+  :init (add-hook 'text-mode-hook #'guess-language-mode)
   :config
-(add-hook 'prog-mode-hook #'wucuo-start)
-(add-hook 'text-mode-hook #'wucuo-start)
-
-
-;; don’t spell check when these modes are active
-(setq wucuo-spell-check-buffer-predicate
-      (lambda ()
-        (not (memq major-mode
-                   '(dired-mode
-                     log-edit-mode
-                     compilation-mode
-                     help-mode
-                     profiler-report-mode
-                     speedbar-mode
-                     gud-mode
-                     calc-mode
-                     Info-mode)))))
-
-(setq wucuo-personal-font-faces-to-check '(font-lock-comment-face))
-
-  )
+  (setq guess-language-langcodes
+	'((en . ("en_US" "English"))
+					;(de . ("de_CH" "German"))
+	  ))
+  :diminish guess-language-mode)
 #+end_src
 * Direnv
 Direnv integration with emacs for reproducible environments
@@ -1094,8 +1171,13 @@ https://github.com/bbatsov/crux/blob/master/crux.el
 #+begin_src emacs-lisp
 ;; collection of really useful Xtensions for emacs
 (use-package crux
+  :init
+  (evil-define-key 'normal global-map
+    (kbd "C-SPC R B") 'crux-rename-file-and-buffer)
   :config
-  (crux-reopen-as-root-mode t))
+  (crux-reopen-as-root-mode t)
+
+  )
 #+end_src
 * Vertico
 #+begin_src emacs-lisp
@@ -1224,36 +1306,42 @@ Move away from custom completion back-ends, try corfu:
   :bind (:map corfu-map
               ("C-j" . corfu-next)
               ("C-k" . corfu-previous)
-              ("C-f" . corfu-insert))
+              ("o" . corfu-insert)
+              ("C-i" . corfu-insert)
+              ("RET" . corfu-complete)
+              ("TAB" . corfu-complete))
   :custom
   (corfu-cycle t)
   (corfu-auto t)             ;; Enable auto completion
   (corfu-quit-at-boundary t) ;; Automatically quit at word boundary
   (corfu-quit-no-match t)    ;; Automatically quit if there is no match
-  :hook
-  (after-init . corfu-global-mode)
-  :config
+  (corfu-echo-documentation t) ;; show documentation in the echo area
+  :init
   (corfu-global-mode))
 
 (use-package dabbrev
   ;; Swap M-/ and C-M-/
-  :bind (("M-/" . dabbrev-completion)
-         ("C-M-/" . dabbrev-expand)))
-;; A few more useful configurations...
-(use-package emacs
   :init
-  ;; TAB cycle if there are only few candidates
-  (setq completion-cycle-threshold 3)
-  ;; Enable indentation+completion using the TAB key.
-  ;; `completion-at-point' is often bound to M-TAB.
-  (setq tab-always-indent 'complete))
+  (global-set-key (kbd "C-<tab>") 'dabbrev-expand)
+  (define-key minibuffer-local-map (kbd "C-<tab>") 'dabbrev-expand)
+  :bind (("M-/" . dabbrev-completion)
+         ("C-M-/" . dabbrev-expand))
+  )
+
+;; A few more useful configurations...
+;; (use-package emacs
+;; Emacs 28: Hide commands in M-x which do not work in the current mode.
+;; Corfu commands are hidden, since they are not supposed to be used via M-x.
+;; (setq read-extended-command-predicate
+;;       #'command-completion-default-include-p)
+;; )
 #+end_src
 * Pass + Emacs
 #+begin_src emacs-lisp
 (use-package auth-source
   :no-require t
   :config
-  (setq auth-sources '(password-store "~/.authinfo")))
+  (setq auth-sources '(password-store "~/.authinfo.gpg")))
 
 (use-package auth-source-pass
   :config
@@ -1273,8 +1361,8 @@ Move away from custom completion back-ends, try corfu:
 (setq TeX-PDF-mode t); PDF mode (rather than DVI-mode)
 
 (add-hook 'TeX-mode-hook 'flyspell-mode); Enable Flyspell mode for TeX modes such as AUCTeX. Highlights all misspelled words.
-(add-hook 'emacs-lisp-mode-hook 'flyspell-prog-mode); Enable Flyspell program mode for emacs lisp mode, which highlights all misspelled words in comments and strings.
-(setq ispell-dictionary "english"); Default dictionary. To change do M-x ispell-change-dictionary RET.
+; (add-hook 'emacs-lisp-mode-hook 'flyspell-prog-mode); Enable Flyspell program mode for emacs lisp mode, which highlights all misspelled words in comments and strings.
+;(setq ispell-dictionary "english"); Default dictionary. To change do M-x ispell-change-dictionary RET.
 (add-hook 'TeX-mode-hook (lambda () (TeX-fold-mode 1))); Automatically activate TeX-fold-mode.
 (setq LaTeX-babel-hyphen nil); Disable language-specific hyphen insertion.
 
@@ -1414,10 +1502,13 @@ directory to make multiple eshell windows easier."
 
 (global-set-key (kbd "C-!") 'eshell-here)
 
-    (defun eshell/x ()
-      (insert "exit")
-      (eshell-send-input)
-      (delete-window))
+(defun eshell/x ()
+  (insert "exit")
+  (eshell-send-input)
+  (delete-window))
+
+(add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
+(add-to-list 'comint-output-filter-functions 'ansi-color-process-output)
 
 ;;; TODO
 ;; (setenv "PATH"
@@ -1446,20 +1537,22 @@ directory to make multiple eshell windows easier."
               (add-to-list 'eshell-visual-commands "top"))))
 
 (add-hook 'eshell-mode-hook (lambda ()
-    (eshell/alias "e" "find-file $1")
-    (eshell/alias "ff" "find-file $1")
-    (eshell/alias "emacs" "find-file $1")
-    (eshell/alias "ee" "find-file-other-window $1")
+			      (eshell/alias "e" "find-file $1")
+			      (eshell/alias "ff" "find-file $1")
+			      (eshell/alias "emacs" "find-file $1")
+			      (eshell/alias "ee" "find-file-other-window $1")
 
-    (eshell/alias "gd" "magit-diff-unstaged")
-    (eshell/alias "gds" "magit-diff-staged")
-    (eshell/alias "d" "dired $1")
+			      (eshell/alias "gd" "magit-diff-unstaged")
+			      (eshell/alias "gds" "magit-diff-staged")
+			      (eshell/alias "d" "dired $1")
 
-    ;; The 'ls' executable requires the Gnu version on the Mac
-    (let ((ls (if (file-exists-p "/usr/local/bin/gls")
-                  "/usr/local/bin/gls"
-                "/bin/ls")))
-      (eshell/alias "ll" (concat ls " -AlohG --color=always")))))
+			      ;; The 'ls' executable requires the Gnu version on the Mac
+			      (let ((ls (if (file-exists-p "/usr/local/bin/gls")
+					    "/usr/local/bin/gls"
+					  "/bin/ls")))
+				(eshell/alias "ll" (concat ls " -AlohG --color=always")))))
+
+
 
 ;; (defun eshell/gst (&rest args)
 ;;     (magit-status (pop args) nil)
@@ -1742,6 +1835,61 @@ PWD is not in a git repo (or the git command is not found)."
                                      ("\\.avi\\'" "vlc")
                                      ))
 
+;; auto refresh dired when file changes
+(add-hook 'dired-mode-hook 'auto-revert-mode)
+
+;; (eval-after-load "dired"
+;;   '(define-key dired-mode-map "z" 'dired-zip-files))
+
+(eval-after-load "dired-aux"
+  '(add-to-list 'dired-compress-file-suffixes 
+                '("\\.zip\\'" ".zip" "unzip")))
+
+(eval-after-load "dired"
+  '(evil-define-key 'normal dired-mode-map
+     (kbd "a z") 'dired-zip-files))
+
+;; (defun xah-dired-to-zip ()
+;;   "Zip the current file in `dired'.
+;; If multiple files are marked, only zip the first one.
+;; Require unix zip command line tool.
+;; URL `http://ergoemacs.org/emacs/emacs_dired_zip_dir.html'
+;; Version 2021-01-14"
+;;   (interactive)
+;;   (let ( (fName (elt (dired-get-marked-files) 0)))
+;;     (shell-command
+;;      (format
+;;       "zip -r %s %s"
+;;       (shell-quote-argument (concat (file-relative-name fName) ".zip"))
+;;       (shell-quote-argument (file-relative-name fName))))))
+
+(defun dired-zip-files (zip-file)
+  "Create an archive containing the marked files."
+  (interactive "sEnter name of zip file: ")
+
+  ;; create the zip file
+  (let ((zip-file (if (string-match ".zip$" zip-file) zip-file (concat zip-file ".zip"))))
+    (shell-command 
+     (concat "zip " 
+             zip-file
+             " "
+             (concat-string-list 
+              (mapcar
+               '(lambda (filename)
+                  (file-name-nondirectory filename))
+               (dired-get-marked-files))))))
+
+  (revert-buffer)
+
+  ;; remove the mark on all the files  "*" to " "
+  ;; (dired-change-marks 42 ?\040)
+  ;; mark zip file
+  ;; (dired-mark-files-regexp (filename-to-regexp zip-file))
+  )
+
+(defun concat-string-list (list) 
+  "Return a string which is a concatenation of all elements of the list separated by spaces" 
+  (mapconcat '(lambda (obj) (format "%s" obj)) list " ")) 
 (use-package async
   :after (dired)
   :config
@@ -2044,6 +2192,15 @@ PWD is not in a git repo (or the git command is not found)."
 
 
 #+end_src
+** Ob Shell
+#+begin_src emacs-lisp
+(use-package ob-shell
+  :ensure nil
+  :after org
+  :config
+  (setq org-babel-default-header-args:sh '((:results . "output")))
+  (setq org-babel-default-header-args:shell '((:results . "output"))))
+#+end_src
 ** Ob Javascript
 #+begin_src emacs-lisp
 (require 'ob-js)
@@ -2054,8 +2211,8 @@ PWD is not in a git repo (or the git command is not found)."
 
 (setq org-babel-default-header-args:js
       '(
-	(:session . "\"*JS REPL*\"") 	;indium
-	;; (:session . "\"*Javascript REPL*\"") ;js-comint
+	;; (:session . "\"*JS REPL*\"") 	;indium
+	(:session . "\"*Javascript REPL*\"") ;js-comint
 	(:cache . "no") 
 	(:hlines . "no")))
 #+end_src
@@ -2144,13 +2301,22 @@ https://orgmode.org/worg/org-contrib/babel/languages/ob-doc-python.html#org96166
    (plantuml . t)))
 
 
-(add-to-list 'org-structure-template-alist
-	     '(("pp" . "src python :session default")
-	       ("sh" . "src sh")
-	       ("el" . "src emacs-lisp")
-	       ("ts" . "src typescript")
-	       ("gg" . "src go")
-	       ("rr" . "src R")))
+(setq org-structure-template-alist
+      '(("a" . "export ascii\n")
+	("c" . "center\n")
+	("C" . "comment\n")
+	("e" . "example\n")
+	("E" . "export")
+	("h" . "export html\n")
+	("l" . "export latex\n")
+	("q" . "quote\n")
+	("s" . "src\n")
+	("p" . "src python\n")
+	("L" . "src emacs-lisp\n")
+	("S" . "src shell\n")
+	("R" . "src R\n")
+	("T" . "src typescript\n")
+	("v" . "verse\n")))
 
 (setq org-confirm-babel-evaluate nil
       org-confirm-shell-link-function nil
@@ -2159,6 +2325,9 @@ https://orgmode.org/worg/org-contrib/babel/languages/ob-doc-python.html#org96166
 
 (org-babel-do-load-languages 'org-babel-load-languages org-babel-load-languages)
 #+end_src
+
+
+
 * Org Latex
 #+begin_src emacs-lisp
 (setq org-latex-pdf-process
@@ -2459,30 +2628,31 @@ https://orgmode.org/worg/org-contrib/babel/languages/ob-doc-python.html#org96166
 * TODO Org Agenda
 #+begin_src emacs-lisp
 (require 'org-agenda)
-(defun jump-to-org-agenda ()
-  (interactive)
-  (let ((buf (get-buffer "*Org Agenda*"))
-	wind)
-    (if buf
-	(if (setq wind (get-buffer-window buf))
-	    (select-window wind)
-	  (if (called-interactively-p)
-	      (progn
-		(select-window (display-buffer buf t t))
-		(org-fit-window-to-buffer)
-		;; (org-agenda-redo)
-		)
-	    (with-selected-window (display-buffer buf)
-	      (org-fit-window-to-buffer)
-	      ;; (org-agenda-redo)
-	      )))
-      (call-interactively 'org-agenda-list)))
-  ;;(let ((buf (get-buffer "*Calendar*")))
-  ;;  (unless (get-buffer-window buf)
-  ;;    (org-agenda-goto-calendar)))
-  )
 
-(run-with-idle-timer 300 t 'jump-to-org-agenda)
+;; (defun jump-to-org-agenda ()
+;;   (interactive)
+;;   (let ((buf (get-buffer "*Org Agenda*"))
+;; 	wind)
+;;     (if buf
+;; 	(if (setq wind (get-buffer-window buf))
+;; 	    (select-window wind)
+;; 	  (if (called-interactively-p)
+;; 	      (progn
+;; 		(select-window (display-buffer buf t t))
+;; 		(org-fit-window-to-buffer)
+;; 		;; (org-agenda-redo)
+;; 		)
+;; 	    (with-selected-window (display-buffer buf)
+;; 	      (org-fit-window-to-buffer)
+;; 	      ;; (org-agenda-redo)
+;; 	      )))
+;;       (call-interactively 'org-agenda-list)))
+;;   ;;(let ((buf (get-buffer "*Calendar*")))
+;;   ;;  (unless (get-buffer-window buf)
+;;   ;;    (org-agenda-goto-calendar)))
+;;   )
+
+;(run-with-idle-timer 300 t 'jump-to-org-agenda)
 
 
 (setq org-completion-use-ido t)
@@ -2596,29 +2766,34 @@ value is a string containg the unaligned `org-mode' table."
 #+end_src
 * Org Flash Cards
 #+begin_src emacs-lisp
-(quelpa
-  '(org-fc
-   :fetcher git :url "https://git.sr.ht/~l3kn/org-fc"
-   :files (:defaults "awk" "demo.org")))
 
-(require 'org-fc)
-(require 'org-fc-hydra)
+  (use-package emacs
+    :after hydra
+    :config
+  (quelpa
+    '(org-fc
+     :fetcher git :url "https://git.sr.ht/~l3kn/org-fc"
+     :files (:defaults "awk" "demo.org")))
 
-(evil-define-minor-mode-key '(normal insert emacs) 'org-fc-review-flip-mode
-  (kbd "RET") 'org-fc-review-flip
-  (kbd "n") 'org-fc-review-flip
-  (kbd "s") 'org-fc-review-suspend-card
-  (kbd "q") 'org-fc-review-quit)
+  (require 'org-fc)
+  (require 'org-fc-hydra)
 
-(evil-define-minor-mode-key '(normal insert emacs) 'org-fc-review-rate-mode
-  (kbd "a") 'org-fc-review-rate-again
-  (kbd "h") 'org-fc-review-rate-hard
-  (kbd "g") 'org-fc-review-rate-good
-  (kbd "e") 'org-fc-review-rate-easy
-  (kbd "s") 'org-fc-review-suspend-card
-  (kbd "q") 'org-fc-review-quit)
+  (evil-define-minor-mode-key '(normal insert emacs) 'org-fc-review-flip-mode
+    (kbd "RET") 'org-fc-review-flip
+    (kbd "n") 'org-fc-review-flip
+    (kbd "s") 'org-fc-review-suspend-card
+    (kbd "q") 'org-fc-review-quit)
 
-(setq org-fc-directories '("~/org/"))
+  (evil-define-minor-mode-key '(normal insert emacs) 'org-fc-review-rate-mode
+    (kbd "a") 'org-fc-review-rate-again
+    (kbd "h") 'org-fc-review-rate-hard
+    (kbd "g") 'org-fc-review-rate-good
+    (kbd "e") 'org-fc-review-rate-easy
+    (kbd "s") 'org-fc-review-suspend-card
+    (kbd "q") 'org-fc-review-quit)
+
+  (setq org-fc-directories '("~/org/"))
+  )
 #+end_src
 * TODO Org Roam
 #+begin_src emacs-lisp
@@ -2817,10 +2992,25 @@ Track document changes
   :hook ((after-init . global-highlight-parentheses-mode)))
 
 #+end_src
+* Define Word
+#+begin_src emacs-lisp
+(use-package define-word)
+#+end_src
+* Ace Link
+#+begin_src emacs-lisp
+(use-package ace-link
+  :config
+  (ace-link-setup-default))
+#+end_src
 * Which Key
 #+begin_src emacs-lisp
 (use-package which-key
-  :config (which-key-mode))
+  :ensure t
+;  :delight which-key-mode
+  :init
+  (which-key-mode)
+  (which-key-setup-side-window-right-bottom)
+  (setq which-key-max-description-length 60))
 #+end_src
 * Xref
 Used for looking up various definitions and references 
@@ -2832,29 +3022,24 @@ pinning to gnu for the latest version
 #+begin_src emacs-lisp
 (use-package hydra)
 #+end_src
+* Bootmark+
+#+begin_src emacs-lisp
+
+#+end_src
 * Dumb Jump
 #+begin_src emacs-lisp
 (use-package dumb-jump
-  :preface
-  (defhydra dumb-jump-hydra (:color blue :columns 3)
-    "Dumb Jump"
-    ("j" dumb-jump-go "Go")
-    ("o" dumb-jump-go-other-window "Other window")
-    ("e" dumb-jump-go-prefer-external "Go external")
-    ("x" dumb-jump-go-prefer-external-other-window "Go external other window")
-    ("i" dumb-jump-go-prompt "Prompt")
-    ("l" dumb-jump-quick-look "Quick look")
-    ("b" dumb-jump-back "Back"))
   :init
+  ;; use gd for go to def
   ;; Preserve jump list in evil
   (defun evil-set-jump-args (&rest ns) (evil-set-jump))
   (advice-add 'dumb-jump-goto-file-line :before #'evil-set-jump-args)
 
-;; use rg
+  ;; use rg
   (setq dumb-jump-prefer-searcher 'rg)
-;; pass flags to git-grep
+  ;; pass flags to git-grep
   (setq dumb-jump-git-grep-search-args "")
-;; pass args to rg
+  ;; pass args to rg
   (setq dumb-jump-rg-search-args "--pcre2")
   :config
   ;; enable xref backend
@@ -3045,37 +3230,19 @@ Snippets!
 #+end_src
 * Flymake
 #+begin_src emacs-lisp
-(use-package flycheck
-  :disabled
-  :config
-  (setq flycheck-indication-mode 'right-fringe)
-  (setq flycheck-check-syntax-automatically '(save
-                                              idle-change
-                                              mode-enabled))
-  (setq flycheck-idle-change-delay 2.0)
-  (set-face-attribute 'flycheck-warning nil
-                      :background "#b58900"
-                      :foreground "#262626"
-                      :underline nil)
-
-  (set-face-attribute 'flycheck-error nil
-                      :background "#dc322f"
-                      :foreground "#262626"
-                      :underline nil)
-
-  (evil-define-key 'normal prog-mode-map
-    ;(kbd ", e l") 'flycheck-list-errors
-    (kbd ", e e") 'consult-flycheck
-    ;(kbd ", e n") 'flycheck-next-error
-    ;(kbd ", e p") 'flycheck-previous-error
-    ;(kbd ", e x") 'flycheck-explain-error-at-point
-    )
-
-  (add-hook 'after-init-hook #'global-flycheck-mode))
-(use-package consult-flycheck :disabled)
-
-
 (use-package flymake
+  :after (project)
+  :preface
+  (defun mu-flymake-mode-activate ()
+    "Activate `flymake-mode' only in my projects."
+    (project--ensure-read-project-list)
+    (let ((known-projects (project-known-project-roots))
+          (pr (or (locate-dominating-file "." ".git")
+                 default-directory)))
+      (if (and (eq buffer-read-only nil)
+             (member pr known-projects))
+          (flymake-mode +1)
+	(flymake-mode -1))))
   :config
   (setq flymake-indication-mode 'right-fringe)
   (setq flymake-check-syntax-automatically '(save
@@ -3094,12 +3261,19 @@ Snippets!
 
   (evil-define-key 'normal prog-mode-map
     (kbd ", e e") 'consult-flymake
-    ;(kbd ", e n") 'flymake-next-error
-    ;(kbd ", e p") 'flymake-previous-error
-    ;(kbd ", e x") 'flymake-explain-error-at-point
+    (kbd ", e n") 'flymake-next-error
+    (kbd ", e p") 'flymake-previous-error
+					;(kbd ", e x") 'flymake-explain-error-at-point
     )
 
-  (add-hook 'after-init-hook 'flymake-mode))
+  ;; (add-hook 'after-init-hook 'flymake-mode)
+  (add-hook 'prog-mode-hook #'mu-flymake-mode-activate)
+  )
+
+(use-package flymake-diagnostic-at-point :ensure t :defer 20
+  :config
+  (flymake-diagnostic-at-point-mode t))
+
 #+end_src
 * Skeletor
 Skeletor provides project templates for Emacs. It also automates the mundane
@@ -3129,27 +3303,57 @@ https://github.com/chrisbarrett/skeletor.el#installation
 Global utilities for programming
 #+begin_src emacs-lisp
 ;; your custom face to color secondary comments blue
-(defface my-second-comment-face '((t (:foreground "blue"))) "its a face")
+;; (defface my-second-comment-face '((t (:foreground "blue"))) "its a face")
+;; (defface ref-comment-face '((t (:foreground "orange"))) "A face for comments inside brackets")
 
-(define-derived-mode testy-mode fundamental-mode
-  "test"
-  (modify-syntax-entry ?/ "<1")
-  (modify-syntax-entry ?/ "<2")
-  (modify-syntax-entry 10 ">")
-  (font-lock-add-keywords
-   'testy-mode
-   ;; this highlights || followed by anything to the end of the line as long as there is
-   ;; a // before it on the same line.
-   ;; the 2 means only highlight the second regexp group, and the t means highlight it
-   ;; even if it has been highlighted already, which is should have been.
-   '(("\\(//.*\\)\\(||.*$\\)" 2 'my-second-comment-face t))))
+;; (define-derived-mode testy-mode fundamental-mode
+;;   "test"
+;;   (modify-syntax-entry ?/ "<1")
+;;   (modify-syntax-entry ?/ "<2")
+;;   (modify-syntax-entry 10 ">")
+;;   (font-lock-add-keywords
+;;    'testy-mode
+;;    ;; this highlights || followed by anything to the end of the line as long as there is
+;;    ;; a // before it on the same line.
+;;    ;; the 2 means only highlight the second regexp group, and the t means highlight it
+;;    ;; even if it has been highlighted already, which is should have been.
+;;    '(("\\(//.*\\)\\(||.*$\\)" 2 'my-second-comment-face t))))
+
+;; (setq mymath-highlights
+;;       '(("Sin\\|Cos\\|Sum" . font-lock-function-name-face)
+;;         ("Pi\\|Infinity" . font-lock-constant-face)))
+
+;; (define-derived-mode mymath-mode prog-mode "mymath"
+;;   "major mode for editing mymath language code."
+;;   (setq font-lock-defaults '(mymath-highlights)))
+
+
+;; examples of defining faces
+
+;; (defface my-lang-phi-word
+;;   '((t :foreground "black"
+;;        :background "aquamarine"
+;;        :weight bold
+;;        :underline t
+;;        ))
+;;   "Face for function parameters."
+;;   :group 'my-lang-mode )
+
+;; (defface my-lang-gamma-word
+;;   '((t :foreground "red"
+;;        :background "#f5f5f5"
+;;        ))
+;;   "Face for global variables."
+;;   :group 'my-lang-mode )
+
+
 
 (defun prelude-font-lock-comment-annotations ()
   "Highlight a bunch of well known comment annotations.
 	This functions should be added to the hooks of major modes for programming."
   (font-lock-add-keywords
    nil '(("\\<\\(\\(FIX\\(ME\\)?\\|TODO\\|OPTIMIZE\\|HACK\\|REFACTOR\\):\\)"
-          1 font-lock-warning-face t))))
+        1 font-lock-warning-face t))))
 
 (add-hook 'prog-mode-hook #'prelude-font-lock-comment-annotations)
 
@@ -3171,36 +3375,50 @@ Global utilities for programming
          (prog-mode . electric-layout-mode)
          (haskell-mode . (lambda () (electric-indent-local-mode -1)))
          (nix-mode . (lambda () (electric-indent-local-mode -1)))))
+
+
+(add-hook 'prog-mode-hook (lambda () (flyspell-prog-mode)))
 #+end_src
 * Paredit
 #+begin_src emacs-lisp
-(use-package paredit
-  :ensure nil
-  :diminish
-  :hook ((lisp-mode emacs-lisp-mode) . paredit-mode)
-  :bind (:map paredit-mode-map
-              ("[")
-              ("M-k"   . paredit-raise-sexp)
-              ("M-I"   . paredit-splice-sexp)
-              ("C-M-l" . paredit-recentre-on-sexp)
-              ("C-c ( n"   . paredit-add-to-next-list)
-              ("C-c ( p"   . paredit-add-to-previous-list)
-              ("C-c ( j"   . paredit-join-with-next-list)
-              ("C-c ( J"   . paredit-join-with-previous-list))
-  :bind (:map lisp-mode-map       ("<return>" . paredit-newline))
-  :bind (:map emacs-lisp-mode-map ("<return>" . paredit-newline))
-  :hook (paredit-mode
-         . (lambda ()
-             (unbind-key "M-r" paredit-mode-map)
-             (unbind-key "M-s" paredit-mode-map)))
-  :config
-  (require 'eldoc)
-  (eldoc-add-command 'paredit-backward-delete
-                     'paredit-close-round))
+;; (use-package paredit
+;;   :ensure nil
+;;   :diminish
+;;   :hook ((lisp-mode emacs-lisp-mode) . paredit-mode)
+;;   :bind (:map paredit-mode-map
+;;               ("[")
+;;               ("M-k"   . paredit-raise-sexp)
+;;               ("M-I"   . paredit-splice-sexp)
+;;               ("C-M-l" . paredit-recentre-on-sexp)
+;;               ("C-c ( n"   . paredit-add-to-next-list)
+;;               ("C-c ( p"   . paredit-add-to-previous-list)
+;;               ("C-c ( j"   . paredit-join-with-next-list)
+;;               ("C-c ( J"   . paredit-join-with-previous-list))
+;;   :bind (:map lisp-mode-map       ("<return>" . paredit-newline))
+;;   :bind (:map emacs-lisp-mode-map ("<return>" . paredit-newline))
+;;   :hook (paredit-mode
+;;          . (lambda ()
+;;              (unbind-key "M-r" paredit-mode-map)
+;;              (unbind-key "M-s" paredit-mode-map)))
+;;   :config
+;;   (require 'eldoc)
+;;   (eldoc-add-command 'paredit-backward-delete
+;;                      'paredit-close-round))
 
 ;; (use-package paredit-ext
 ;;   :ensure nil
 ;;   :after paredit)
+
+(add-hook 'emacs-lisp-mode-hook
+          (lambda ()
+;;            (paredit-mode t)
+            (turn-on-eldoc-mode)
+            (eldoc-add-command
+             'paredit-backward-delete
+             'paredit-close-round)
+            (local-set-key (kbd "RET") 'electrify-return-if-match)
+            (eldoc-add-command 'electrify-return-if-match)
+            (show-paren-mode t)))
 #+end_src
 * TODO Lispyville
 Read up on the docs
@@ -3225,12 +3443,11 @@ Compatibility layer between Lispy and Evil
 #+end_src
 * LSP
 #+begin_src emacs-lisp
-;; (use-package lsp-mode
-;;   :commands lsp
-;;   :hook ((typescript-mode js2-mode web-mode) . lsp)
-;;   :bind (:map lsp-mode-map
-;;               ("TAB" . completion-at-point))
-;;   :custom (lsp-headerline-breadcrumb-enable nil))
+(use-package lsp-mode
+  :commands lsp
+  :bind (:map lsp-mode-map
+              ("TAB" . completion-at-point))
+  :custom (lsp-headerline-breadcrumb-enable nil))
 
 ;; (dw/leader-key-def
 ;;  "l"  '(:ignore t :which-key "lsp")
@@ -3243,94 +3460,19 @@ Compatibility layer between Lispy and Evil
 ;;  "lS" 'lsp-ui-sideline-mode
 ;;  "lX" 'lsp-execute-code-action)
 
-;; (use-package lsp-ui
-;;   :hook (lsp-mode . lsp-ui-mode)
-;;   :config
-;;   (setq lsp-ui-sideline-enable t)
-;;   (setq lsp-ui-sideline-show-hover nil)
-;;   (setq lsp-ui-doc-position 'bottom)
-;;   (lsp-ui-doc-show))
-
 (use-package lsp-ui
-  :disabled
+  :hook (lsp-mode . lsp-ui-mode)
   :config
-  (setq
-   lsp-ui-peek-always-show t
-   lsp-ui-sideline-show-hover t)
-  (setq lsp-ui-sideline-enable t
-	;; disable flycheck setup so default linter isn't trampled
-	lsp-ui-flycheck-enable nil
-	lsp-ui-sideline-show-symbol nil
-	lsp-ui-sideline-show-hover nil
-	lsp-ui-sideline-show-code-actions nil
-	lsp-ui-peek-enable nil
-	lsp-ui-imenu-enable nil
-	lsp-ui-doc-enable nil))
+  (setq lsp-ui-sideline-enable t)
+  (setq lsp-ui-sideline-show-hover nil)
+  (setq lsp-ui-doc-position 'bottom)
+  (lsp-ui-doc-show))
 
-(use-package lsp-mode
-  :commands lsp
-  :init
-  (setq
-   lsp-auto-configure t
-   lsp-enable-dap-auto-configure nil ; Don't try to auto-enable dap: this creates a lot of binding clashes
-   lsp-before-save-edits t
-   lsp-eldoc-enable-hover t
-   lsp-eldoc-render-all t
-   lsp-completion-enable t
-   lsp-completion-show-detail t
-   lsp-completion-show-kind t
-   lsp-enable-file-watchers t
-   lsp-enable-folding t
-   lsp-enable-imenu t
-   lsp-enable-indentation t
-   lsp-enable-links t
-   lsp-clients-python-library-directories `("/usr/" ,(expand-file-name "~/.virtualenvs")) ; This seems appropriate
-   lsp-enable-on-type-formatting nil
-   lsp-enable-snippet nil ;; Not supported by company capf, which is the recommended company backend
-   lsp-enable-symbol-highlighting nil
-   lsp-enable-text-document-color nil
-   lsp-enable-xref t
-   lsp-flycheck-live-reporting nil
-   lsp-idle-delay 0.5
-   lsp-imenu-show-container-name t
-   lsp-imenu-sort-methods '(position kind name)
-   lsp-pyls-plugins-flake8-enabled t
-   lsp-signature-auto-activate t
-   lsp-signature-render-documentation t
-   lsp-signature-doc-lines 10
-   lsp-enable-symbol-highlighting t
-   ;; don't set flymake or lsp-ui so the default linter doesn't get trampled
-   ;;lsp-diagnostic-package :none
-   )
-
-  ;; :hook
-  ;; (((js2-mode rjsx-mode) . lsp)
-  ;;  ((python-mode . lsp)
-  ;;   ;; (lsp-mode . lsp-enable-imenu)
-  ;;   (lsp-mode . lsp-enable-which-key-integration)))
-  :config
-  (lsp-register-custom-settings
-   '(("pyls.plugins.pyls_mypy.enabled" t t)
-     ("pyls.plugins.pyls_mypy.live_mode" nil t)
-     ("pyls.plugins.pyls_black.enabled" t t)
-     ("pyls.plugins.pyls_isort.enabled" t t)
-     ;; Disable these as they're duplicated by flake8
-     ("pyls.plugins.pycodestyle.enabled" nil t)
-     ("pyls.plugins.mccabe.enabled" nil t)
-     ("pyls.plugins.pyflakes.enabled" nil t)))
-
-  ;; make sure we have lsp-imenu everywhere we have LSP
-  ;; (require 'lsp-imenu)
-  (add-hook 'lsp-after-open-hook 'lsp-enable-imenu)  
-  ;; (add-hook 'lsp-mode-hook 'lsp-ui-mode)
-  (add-to-list 'lsp-language-id-configuration '(nix-mode . "nix"))
-  (lsp-register-client
-   (make-lsp-client :new-connection (lsp-stdio-connection '("rnix-lsp"))
-		    :major-modes '(nix-mode)
-		    :server-id 'nix))
-  )
+(quelpa '(lsp-tailwindcss :repo "merrickluo/lsp-tailwindcss" :fetcher github))
+(use-package lsp-tailwindcss)
 
 (use-package consult-lsp
+  :disabled
   :config
   (define-key lsp-mode-map [remap xref-find-apropos] #'consult-lsp-symbols))
 
@@ -3338,6 +3480,15 @@ Compatibility layer between Lispy and Evil
 * DAP
 #+begin_src emacs-lisp
 (use-package dap-mode
+
+  :bind (:map dap-server-log-mode-map
+              :map dap-mode-map
+              ([f9] . dap-continue)
+              ([S-f9] . dap-disconnect)
+              ([f10] . dap-next)
+              ([f11] . dap-step-in)
+              ([S-f11] . dap-step-out)
+              ([f12] . dap-hide/show-ui))
   :custom
   (lsp-enable-dap-auto-configure nil)
   :config
@@ -3345,24 +3496,6 @@ Compatibility layer between Lispy and Evil
   (dap-tooltip-mode 1)
   (require 'dap-node)
   (dap-node-setup))
-
-;; (use-package dap-mode :after lsp-mode :config (dap-auto-configure-mode))
-
-
-
-;; (use-package dap-mode
-;;   ;; :bind (:map dap-server-log-mode-map
-;;   ;;             :map dap-mode-map
-;;   ;;             ([f9] . dap-continue)
-;;   ;;             ([S-f9] . dap-disconnect)
-;;   ;;             ([f10] . dap-next)
-;;   ;;             ([f11] . dap-step-in)
-;;   ;;             ([S-f11] . dap-step-out)
-;;   ;;             ([f12] . dap-hide/show-ui))
-;;   :config
-;;   (dap-mode t)
-;;   (dap-ui-mode t))
-
 #+end_src
 * Slime
 https://wikemacs.org/wiki/SLIME
@@ -3373,8 +3506,8 @@ https://wikemacs.org/wiki/SLIME
 #+end_src
 * Emacs Lisp
 #+begin_src emacs-lisp
-(use-package
-    elisp-format
+(use-package elisp-format
+  :after paredit
   :bind (:map emacs-lisp-mode-map
               ("C-c f" . 'my-elisp-format-buffer))
   :config (add-hook 'lisp-mode-hook (lambda ()
@@ -3406,8 +3539,14 @@ Still needs work getting the newer dart server to run
   :commands eglot
   :config
   (add-to-list 'eglot-server-programs '(nix-mode . ("rnix-lsp")))
-  (add-hook 'nix-mode-hook 'eglot-ensure)
-  (add-hook 'python-mode-hook 'eglot-ensure)
+  (add-to-list 'eglot-server-programs '(web-mode . ("typescript-language-server --stdio")))
+
+  (add-hook 'c-mode-hook 'eglot-ensure)
+  (add-hook 'c++-mode-hook 'eglot-ensure)
+
+  (add-hook 'typescript-mode-hook 'eglot-ensure)
+  ;; (add-hook 'nix-mode-hook 'eglot-ensure)
+  ;; (add-hook 'python-mode-hook 'eglot-ensure)
   ;; (add-hook 'dart-mode-hook 'eglot-ensure)
   (setq eglot-server-programs
 	`((dart-mode .
@@ -3416,9 +3555,7 @@ Still needs work getting the newer dart server to run
                                          (file-name-directory
                                           (file-truename
                                            (executable-find "dart"))))
-		      "--lsp"))))
-
-  )
+		      "--lsp")))))
 #+end_src
 * TODO Flutter + Dart
 #+begin_src emacs-lisp
@@ -3444,7 +3581,9 @@ Shorthand and Expand for HTML Tags
 #+begin_src emacs-lisp
 (use-package emmet-mode
   :diminish
-  :hook (css-mode sgml-mode web-mode typescript-mode js2-mode)
+  :hook (css-mode sgml-mode
+
+js2-mode)
   :config
   ;; :bind (:map emmet-mode-keymap
   ;;             ;; (e)mmet (e)xpand
@@ -3545,24 +3684,9 @@ https://www.youtube.com/watch?v=Bbjxn9yVNJ8
   :init (add-hook 'prog-mode-hook #'rainbow-delimiters-mode)
   :diminish rainbow-delimiters-mode)
 
-(defun prelude-font-lock-comment-annotations ()
-  "Highlight a bunch of well known comment annotations.
-
-        This functions should be added to the hooks of major modes for programming."
-  (font-lock-add-keywords
-   nil '(("\\<\\(\\(FIX\\(ME\\)?\\|TODO\\|OPTIMIZE\\|HACK\\|REFACTOR\\):\\)"
-          1 font-lock-warning-face t))))
-
-
-(add-hook 'prog-mode-hook #'prelude-font-lock-comment-annotations)
 
 ;; web
-(add-to-list 'auto-mode-alist '("\\.php$" . web-mode))
-(add-to-list 'auto-mode-alist '("\\.htm$" . web-mode))
-(add-to-list 'auto-mode-alist '("\\.html$" . web-mode))
-(add-hook 'web-mode-hook '(lambda ()
-  (local-set-key (kbd "RET") 'newline-and-indent)
-  (emmet-mode)))
+
 (custom-set-variables '(coffee-tab-width 2))
 
 (global-font-lock-mode t)
@@ -3640,19 +3764,6 @@ commands"
 #+end_src
 * Python
 #+begin_src emacs-lisp
-
-;; (use-package company-jedi)
-;; ;; (add-hook 'python-mode-hook (lambda () ('lsp)))
-;; (require 'python)
-;; (defun my/python-mode-hook ()
-;;   (add-to-list 'company-backends 'company-jedi))
-;; (add-hook 'python-mode-hook 'my/python-mode-hook)
-;; ;; (setq python-shell-interpreter "ipython"
-;; ;;        python-shell-interpreter-args "-i")
-
-;; Syntax highlighting for requirements.txt files
-(use-package pip-requirements)
-
 (use-package blacken
   ;; :hook (python-mode . blacken-mode)
   :defer t
@@ -3673,37 +3784,116 @@ commands"
 
 
 #+end_src
-
 * Web Development
 ** Web Mode
 Web beautify prettifies html / css / js using js-beautify - install with npm install -g js-beautify.
 #+begin_src emacs-lisp
 (use-package web-mode
-  :mode ("\\.html\\'")
-  :config
-  (setq web-mode-markup-indent-offset 2)
-  (setq web-mode-engines-alist
-        '(("django" . "focus/.*\\.html\\'")
-          ("ctemplate" . "realtimecrm/.*\\.html\\'"))))
+  :init
+
+(setq-default web-mode-code-indent-offset 2)
+(setq-default web-mode-markup-indent-offset 2)
+(setq-default web-mode-attribute-indent-offset 2)
+
+:config
+(add-to-list 'auto-mode-alist '("\\.tsx\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.jsx\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.html\\'" . web-mode))
+
+(add-hook 'web-mode-hook
+          (lambda ()
+            (when (string-equal "tsx" (file-name-extension buffer-file-name))
+              (setup-tide-mode))))
+
+(add-hook 'web-mode-hook  (lambda () (emmet-mode) (js2-minor-mode)
+			    ;;(prettier-js-mode)
+			   ;; (flymake-mode)
+			    ))
+)
+  
+
+;; enable typescript-tslint checker
+;; (flycheck-add-mode 'typescript-tslint 'web-mode)
+
+
 
 (use-package web-beautify
   :bind (:map web-mode-map
-              ("C-c b" . web-beautify-html)
-              :map js2-mode-map
-              ("C-c b" . web-beautify-js)))
-
-;; (use-package web-mode
-;; ;  :mode "(\\.\\(html?\\|ejs\\|tsx\\|jsx\\)\\'"
-;;   :config
-;;   (setq-default web-mode-code-indent-offset 2)
-;;   (setq-default web-mode-markup-indent-offset 2)
-;;   (setq-default web-mode-attribute-indent-offset 2))
+	      ("C-c b" . web-beautify-html)
+	      :map js2-mode-map
+	      ("C-c b" . web-beautify-js)))
 
 ;; 1. Start the server with `httpd-start'
 ;; 2. Use `impatient-mode' on any buffer
 (use-package impatient-mode)
 
 (use-package skewer-mode)
+
+;; (autoload 'sgml-electric-tag-pair-mode
+;;   "sgml-mode" "Auto edits html tags" t)
+;; (add-hook 'js-mode-hook 'sgml-electric-tag-pair-mode)
+
+;; ;; add delete tag from sgml-mode
+;; (autoload 'sgml-delete-tag
+;;   "sgml-mode" "Delete html tags" t)
+;; (global-set-key (kbd "C-c DEL") 'sgml-delete-tag)
+
+;; ;; add close tag from sgml-mode
+;; (autoload 'sgml-close-tag
+;;   "sgml-mode" "Close html tags" t)
+;; (global-set-key (kbd "C-c /") 'sgml-close-tag)
+
+(setq sgml-set-face t)
+(setq sgml-auto-activate-dtd t)
+(setq sgml-indent-data t)
+
+(setq sgml-markup-faces '(
+			  (start-tag . font-lock-keyword-face)
+			  (end-tag . font-lock-keyword-face)
+			  (comment . font-lock-comment-face)
+			  (pi . font-lock-constant-face) ;; <?xml?>
+			  (sgml . font-lock-type-face)
+			  (doctype . bold)
+			  (entity . italic)
+			  (shortref . font-lock-reference-face)))
+#+end_src
+** Tide + Typescript
+#+begin_src emacs-lisp
+(defun setup-tide-mode ()
+  (interactive)
+  (tide-setup)
+
+  ;; (flycheck-mode +1)
+  ;; (setq flycheck-check-syntax-automatically '(save mode-enabled))
+
+  (eldoc-mode +1)
+  (tide-hl-identifier-mode +1)
+  ;; company is an optional dependency. You have to
+  ;; install it separately via package-install
+  ;; `M-x package-install [ret] company`
+					; (company-mode +1)
+  )
+
+;; aligns annotation to the right hand side
+(setq company-tooltip-align-annotations t)
+
+;; formats the buffer before saving
+(add-hook 'before-save-hook 'tide-format-before-save)
+
+(add-hook 'typescript-mode-hook #'setup-tide-mode)
+
+(use-package tide
+  :ensure t
+  :after (typescript-mode ;company flycheck
+			  )
+  :config
+					; set tsfmt
+  (setq tide-format-options '(:insertSpaceAfterFunctionKeywordForAnonymousFunctions t :placeOpenBraceOnNewLineForFunctions nil))
+
+  :hook ((typescript-mode . tide-setup)
+         (typescript-mode . tide-hl-identifier-mode)
+         (before-save . tide-format-before-save)))
+ 
 #+end_src
 ** TODO Javascript
 #+begin_src emacs-lisp
@@ -3724,9 +3914,9 @@ Web beautify prettifies html / css / js using js-beautify - install with npm ins
 ;; 	  (funcall (cdr my-pair)))))
 
 
-(eval-after-load 'web-mode
-  '(progn
-     (add-hook 'web-mode-hook #'prettier-js-mode)))
+;; (eval-after-load 'web-mode
+;;   '(progn
+;;      (add-hook 'web-mode-hook #'prettier-js-mode)))
 
 (setq js-comint-program-command "node")
 
@@ -3769,107 +3959,26 @@ Web beautify prettifies html / css / js using js-beautify - install with npm ins
   :config
   (setq indium-chrome-executable "chromium"))
 
+
+
+(use-package js2-refactor :ensure t :defer 30
+  :config
+  (add-hook 'js2-mode-hook #'js2-refactor-mode)
+  (js2r-add-keybindings-with-prefix "C-c C-m"))
 #+end_src
 ** Typescript
 #+begin_src emacs-lisp
 (use-package typescript-mode
-             :mode ("\\.ts[x]?\\'" "\\.js[x]?\\'")
-             :hook (typescript-mode . lsp-deferred)
              :config
              (setq typescript-indent-level 2))
 #+end_src
 * TODO C Mode
 Can’t decide between rtags or eglot
-#+begin_src emacs-lisp :noeval
-;; (use-package irony
-;;   :config
-;;   (progn
-;;     ;; If irony server was never installed, install it.
-;;     (unless (irony--find-server-executable) (call-interactively #'irony-install-server))
-
-;;     (add-hook 'c++-mode-hook 'irony-mode)
-;;     (add-hook 'c-mode-hook 'irony-mode)
-
-;;     ;; Use compilation database first, clang_complete as fallback.
-;;     (setq-default irony-cdb-compilation-databases '(irony-cdb-libclang
-;;                                                     irony-cdb-clang-complete))
-
-;;     (add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options)
-;;     ))
-
-;; ;; I use irony with company to get code completion.
-;; (use-package company-irony
-;;   :after company irony
-;;   :config
-;;   (progn
-;;     (eval-after-load 'company '(add-to-list 'company-backends 'company-irony))))
-
-;; ;; I use irony with flycheck to get real-time syntax checking.
-;; (use-package flycheck-irony
-;;   :after flycheck irony
-;;   :config
-;;   (progn
-;;     (eval-after-load 'flycheck '(add-hook 'flycheck-mode-hook #'flycheck-irony-setup))))
-
-;; ;; Eldoc shows argument list of the function you are currently writing in the echo area.
-;; (use-package irony-eldoc
-;;   :after eldoc irony
-;;   :config
-;;   (progn
-;;     (add-hook 'irony-mode-hook #'irony-eldoc)))
-
-;; (use-package rtags
-;;   :config
-;;   (progn
-;;     (unless (rtags-executable-find "rc") (error "Binary rc is not installed!"))
-;;     (unless (rtags-executable-find "rdm") (error "Binary rdm is not installed!"))
-
-;;     (define-key c-mode-base-map (kbd "M-.") 'rtags-find-symbol-at-point)
-;;     (define-key c-mode-base-map (kbd "M-,") 'rtags-find-references-at-point)
-;;     (define-key c-mode-base-map (kbd "M-?") 'rtags-display-summary)
-;;     (rtags-enable-standard-keybindings)
-
-;;     (setq rtags-use-helm t)
-
-;;     ;; Shutdown rdm when leaving emacs.
-;;     (add-hook 'kill-emacs-hook 'rtags-quit-rdm)
-;;     ))
-
-
-;; (use-package rtags-xref
-;;   :ensure nil
-;;   :after (rtags)
-;;   :config
-;;   (add-hook 'c-mode-common-hook #'rtags-xref-enable))
-
-;; ;; Use rtags for auto-completion.
-;; (use-package company-rtags
-;;   :ensure nil
-;;   :after company rtags
-;;   :config
-;;   (progn
-;;     (setq rtags-autostart-diagnostics t)
-;;     (rtags-diagnostics)
-;;     (setq rtags-completions-enabled t)
-;;     (push 'company-rtags company-backends)
-;;     ))
-
-;; (use-package flycheck-rtags
-;;   :ensure nil
-;;   :after flycheck rtags
-;;   :config
-;;   (progn
-;;     ;; ensure that we use only rtags checking
-;;     ;; https://github.com/Andersbakken/rtags#optional-1
-;;     (defun setup-flycheck-rtags ()
-;;       (flycheck-select-checker 'rtags)
-;;       (setq-local flycheck-highlighting-mode nil) ;; RTags creates more accurate overlays.
-;;       (setq-local flycheck-check-syntax-automatically nil)
-;;       (rtags-set-periodic-reparse-timeout 2.0)  ;; Run flycheck 2 seconds after being idle.
-;;       )
-;;     (add-hook 'c-mode-hook #'setup-flycheck-rtags)
-;;     (add-hook 'c++-mode-hook #'setup-flycheck-rtags)
-;;     ))
+https://emacs.stackexchange.com/questions/38421/how-to-compile-and-run-a-c-file
+#+begin_src emacs-lisp
+(use-package modern-cpp-font-lock
+  :config
+  (add-hook 'c++-mode-hook #'modern-c++-font-lock-mode))
 #+end_src
 * Godot
 #+begin_src emacs-lisp
@@ -3901,8 +4010,6 @@ Can’t decide between rtags or eglot
 * Misc Modes
 #+begin_src emacs-lisp
 
-(use-package web-mode
-  :mode ("\\.[tj]sx?\\'"))
 
 (use-package css-mode
   :mode ("\\.css\\'"
@@ -3932,10 +4039,8 @@ Can’t decide between rtags or eglot
 
 #+end_src
 * Prettier JS
+prettier formatting
 #+begin_src emacs-lisp
-
-
-;; prettier formatting
 (use-package prettier-js
   :defer t
   :diminish prettier-js-mode
@@ -3947,17 +4052,11 @@ Can’t decide between rtags or eglot
                       "--jsx-single-quote" "true"
                       "--jsx-bracket-same-line" "true"
                       "--print-width" "100")))
-
-
-
-
-
 #+end_src
 * Consult
 Consult provides various practical commands based on the Emacs
 completion function completing-read, which allows to quickly select
 an item from a list of candidates with completion.
-
 https://github.com/minad/consult/wiki
 https://github.com/minad/consult
 #+begin_src emacs-lisp
@@ -3967,7 +4066,7 @@ https://github.com/minad/consult
   :bind (;; C-c bindings (mode-specific-map)
          ("C-c h" . consult-history)
          ("C-c m" . consult-mode-command)
-         ;; ("C-c b" . consult-bookmark)
+         ("C-c b" . consult-bookmark)
          ("C-c k" . consult-kmacro)
          ;; C-x bindings (ctl-x-map)
          ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
@@ -4094,7 +4193,6 @@ M-x speed-type-text will start the typing exercise.
 (use-package edebug)
 (use-package rmsbolt)
 #+end_src
-
 * Scad
 A package for making 3d images with OpenScad
 #+begin_src emacs-lisp
@@ -4145,8 +4243,8 @@ deft-setup to create the ~/.deft directory automatically.
 #+end_src
 * Notmuch
 #+begin_src emacs-lisp
-(quelpa '(notmuch :url "https://git.notmuchmail.org/git/notmuch" :fetcher git))
-(require 'notmuch)
+;(quelpa '(notmuch :url "https://git.notmuchmail.org/git/notmuch" :fetcher git))
+;(require 'notmuch)
 #+end_src
 * Exec path from Shell
 Read:
@@ -4160,34 +4258,6 @@ https://stackoverflow.com/questions/49764993/using-a-users-bashrc-in-a-systemd-s
 * Journalctl
 #+begin_src emacs-lisp
 (use-package journalctl-mode)
-#+end_src
-* Keyboard Bindings
-#+begin_src emacs-lisp
-;; escape quits
-(global-set-key [escape] 'keyboard-escape-quit)         
-(bind-key "<escape>" 'isearch-cancel isearch-mode-map)
-(define-key minibuffer-local-map (kbd "ESC") 'abort-recursive-edit)
-(define-key minibuffer-local-ns-map (kbd "ESC") 'abort-recursive-edit)
-(define-key minibuffer-local-completion-map (kbd "ESC") 'abort-recursive-edit)
-(define-key minibuffer-local-must-match-map (kbd "ESC") 'abort-recursive-edit)
-(define-key minibuffer-local-isearch-map (kbd "ESC") 'abort-recursive-edit)
-
-(define-key minibuffer-local-map (kbd "C-h") 'vertico--backward-updir)
-(define-key minibuffer-local-ns-map (kbd "C-h") 'vertico--backward-updir)
-
-
-(define-key minibuffer-local-map (kbd "C-j") 'next-line-or-history-element)
-(define-key minibuffer-local-ns-map (kbd "C-j") 'next-line-or-history-element)
-(define-key minibuffer-local-completion-map (kbd "C-j") 'next-line-or-history-element)
-(define-key minibuffer-local-must-match-map (kbd "C-j") 'next-line-or-history-element)
-(define-key minibuffer-local-isearch-map (kbd "C-j") 'next-line-or-history-element)
-
-(define-key minibuffer-local-map (kbd "C-k") 'previous-line-or-history-element)
-(define-key minibuffer-local-ns-map (kbd "C-k") 'previous-line-or-history-element)
-(define-key minibuffer-local-completion-map (kbd "C-k") 'previous-line-or-history-element)
-
-(define-key minibuffer-local-must-match-map (kbd "C-k") 'previous-line-or-history-element)
-(define-key minibuffer-local-isearch-map (kbd "C-k") 'previous-line)
 #+end_src
 * Server
 multiplexing emacs and emacsclient 
@@ -4207,10 +4277,8 @@ multiplexing emacs and emacsclient
   ;;   (paredit-mode))
   )
 #+END_SRC
-
 * This part spits out a literate config into a file
 # ## :tangle spacemacs.el
-
 * This part does the same?
 # * Local Variables                                                   :ARCHIVE:
 # # Local Variables:
